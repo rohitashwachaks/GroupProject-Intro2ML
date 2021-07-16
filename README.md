@@ -21,6 +21,7 @@ Presentation date: **27 July**
 - Knn: K-fold () - Nemo/Casey
 - Random Forest + Boosting - Soumik
 - Bagging + Boosting - Divyansh
+- Logistic Regression 
 - Variable Importance(?) other Important Insights - Shehzad Ali
 
 
