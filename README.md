@@ -18,10 +18,10 @@ Presentation date: **27 July**
 
 ## Ideation
 - Are Ids unique?
-- Knn: K-fold () - Nemo
-- Random Forest + Boosting
-- Bagging + Boosting
-- Variable Importance(?) other Important Insights
+- Knn: K-fold () - Nemo/Casey
+- Random Forest + Boosting - Soumik
+- Bagging + Boosting - Divyansh
+- Variable Importance(?) other Important Insights - Shehzad Ali
 
 
 
