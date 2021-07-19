@@ -14,15 +14,19 @@ Presentation date: **27 July**
 
 ## EDA Observation
 - 4% BMI data is N/A
-- 
+- Heavily skewed classes _(4.25% positives)_
+
+## Issues
+- Skewed Data
+- Knn Issues (DROP Knn. Going Ahead with Trees)
+- Accuracy
 
 ## Ideation
 - Are Ids unique?
-- Knn: K-fold () - Nemo/Casey
 - Random Forest + Boosting - Soumik
-- Bagging + Boosting - Divyansh
-- Logistic Regression 
+- Bagging + Boosting - Divyansh 
 - Variable Importance(?) other Important Insights - Shehzad Ali
+- Undersampling? 209 pos, 313 negs. 512 obs total. bootstrap needed?
 
 
 
