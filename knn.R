@@ -16,6 +16,8 @@ library("scatterplot3d")
 library(smotefamily)
 library(ipred)
 
+library(corrplot)
+
 set.seed(0)
 
 #----Data Prep-----
@@ -36,6 +38,9 @@ data$work_type <- as.factor(data$work_type)
 data$Residence_type <- as.factor(data$Residence_type)
 data$smoking_status <- as.factor(data$smoking_status)
 data$stroke <- as.factor(data$stroke)
+
+df2 = cor(data[,c("age","avg_glucose_level","bmi")])
+corrplot(df2, method = 'number')
 
 
 #----BMI----
@@ -137,7 +142,7 @@ scatterplot3d(x = df$age, xlab = "Age",
 
 
 
-# #----Normalise Continuous Variables----
+#----Normalise Continuous Variables----
 
 normalize <- function(x){
   return ((x - mean(x)) / sd(x))
@@ -272,9 +277,9 @@ text(log(1/best),mRecall[best]-0.1,paste("best k=",kk[best]),col=2,cex=1.2)
 text(log(1/2),mRecall[2],paste("k=",2),col=2,cex=1.2)
 text(log(1/tr_size)+0.4,mRecall[tr_size],paste("k=",tr_size),col=2,cex=1.2)
 
-
-near <- kknn(stroke~age,train,discarded_negs,k=kk[best],kernel = "rectangular")
-summary(near$fitted.values)
+# 
+# near <- kknn(stroke~age,train,discarded_negs,k=kk[best],kernel = "rectangular")
+# summary(near$fitted.values)
 
 
 #----KFold KNN (Age + Avg. Glucose)----
@@ -344,10 +349,10 @@ plot(log(1/kk),mRecall,
 text(log(1/best),mRecall[best]-0.1,paste("best k=",kk[best]),col=2,cex=1.2)
 text(log(1/2),mRecall[2],paste("k=",2),col=2,cex=1.2)
 text(log(1/tr_size)+0.4,mRecall[tr_size],paste("k=",tr_size),col=2,cex=1.2)
-
-
-near <- kknn(stroke~age+avg_glucose_level,train,discarded_negs,k=kk[best],kernel = "rectangular")
-summary(near$fitted.values)
+# 
+# 
+# near <- kknn(stroke~age+avg_glucose_level,train,discarded_negs,k=kk[best],kernel = "rectangular")
+# summary(near$fitted.values)
 
 
 #----KFold KNN (Age + Avg. Glucose + BMI)----
@@ -421,79 +426,78 @@ text(log(1/2),mRecall[2],paste("k=",2),col=2,cex=1.2)
 text(log(1/tr_size)+0.4,mRecall[tr_size],paste("k=",tr_size),col=2,cex=1.2)
 
 
-near <- kknn(stroke~age+avg_glucose_level+bmi,train,discarded_negs,k=kk[best],kernel = "rectangular")
-summary(near$fitted.values)
+# near <- kknn(stroke~age+avg_glucose_level+bmi,train,discarded_negs,k=kk[best],kernel = "rectangular")
+# summary(near$fitted.values)
 
 
 #----KFold KNN (All Params)----
-# kcv = 10
-# 
-# # Divide into groups of size n0
-# n0 = ceiling(n/kcv)
-# 
-# out_Recall = matrix(0,kcv,tr_size)
-# out_accuracy <- matrix(0,kcv,tr_size)
-# used = NULL
-# set = 1:n
-# 
-# # kk <- seq(1,tr_size, by=100) # If Using SMOTE
-# kk <- seq(1,tr_size)        # If using UnderSampling
-# 
-# 
-# for(j in seq(1,kcv))
-# {
-#   if(n0<length(set)){
-#     val = sample(set,n0)
-#   } else {
-#     val=set
-#   }
-#   
-#   train_i = df[-val,]
-#   test_i = df[val,]
-#   
-#   for(i in kk)
-#   {
-#     near = kknn(stroke~.,train_i,test_i,k=i,kernel = "rectangular")
-#     
-#     # 1. Confusion Matrix
-#     cm <- confusionMatrix(near$fitted, test_i$stroke, positive = "1")
-#     recall <- as.numeric(cm$byClass["Recall"])
-#     acc <- as.numeric(cm$byClass["Balanced Accuracy"])
-#     out_accuracy[j,i] <- acc
-#     # cat("(",j,")",i," -> ",recall,'\n')
-#     out_Recall[j,i] = recall
-#   }
-#   
-#   used = union(used,val)
-#   set = (1:n)[-used]
-#   
-#   cat('------',j,'------\n')
-# }
-# 
-# mRecall = apply(out_Recall,2,mean)
-# mAcc = apply(out_accuracy, 2, mean)
-# 
-# best = which.max(mRecall)
-# best
-# max(mRecall)
-# mRecall[best]
-# mAcc[best]
-# 
-# plot(log(1/kk),mRecall,
-#      xlab="Complexity (log(1/k))",
-#      ylab="out-of-sample Recall",
-#      col=4,lwd=2,type="l",
-#      cex.lab=1.2,
-#      main=paste("Knn- All Params\n Best Recall: ",
-#                 round(mRecall[best], digits=2),
-#                 "\n Accuracy: ",
-#                 round(mAcc[best], digits=2))
-# )
-# 
-# text(log(1/best),mRecall[best]-0.1,paste("best k=",kk[best]),col=2,cex=1.2)
-# text(log(1/2),mRecall[2],paste("k=",2),col=2,cex=1.2)
-# text(log(1/tr_size)+0.4,mRecall[tr_size],paste("k=",tr_size),col=2,cex=1.2)
-# 
-# 
+kcv = 10
+
+# Divide into groups of size n0
+n0 = ceiling(n/kcv)
+
+out_Recall = matrix(0,kcv,tr_size)
+out_accuracy <- matrix(0,kcv,tr_size)
+used = NULL
+set = 1:n
+
+# kk <- seq(1,tr_size, by=100) # If Using SMOTE
+kk <- seq(1,tr_size)        # If using UnderSampling
+
+
+for(j in seq(1,kcv))
+{
+  if(n0<length(set)){
+    val = sample(set,n0)
+  } else {
+    val=set
+  }
+
+  train_i = df[-val,]
+  test_i = df[val,]
+
+  for(i in kk)
+  {
+    near = kknn(stroke~.,train_i,test_i,k=i,kernel = "rectangular")
+
+    # 1. Confusion Matrix
+    cm <- confusionMatrix(near$fitted, test_i$stroke, positive = "1")
+    recall <- as.numeric(cm$byClass["Recall"])
+    acc <- as.numeric(cm$byClass["Balanced Accuracy"])
+    out_accuracy[j,i] <- acc
+    # cat("(",j,")",i," -> ",recall,'\n')
+    out_Recall[j,i] = recall
+  }
+
+  used = union(used,val)
+  set = (1:n)[-used]
+
+  cat('------',j,'------\n')
+}
+
+mRecall = apply(out_Recall,2,mean)
+mAcc = apply(out_accuracy, 2, mean)
+
+best = which.max(mRecall)
+best
+max(mRecall)
+mRecall[best]
+mAcc[best]
+
+plot(log(1/kk),mRecall,
+     xlab="Complexity (log(1/k))",
+     ylab="out-of-sample Recall",
+     col=4,lwd=2,type="l",
+     cex.lab=1.2,
+     main=paste("Knn- All Params\n Best Recall: ",
+                round(mRecall[best], digits=2),
+                "\n Accuracy: ",
+                round(mAcc[best], digits=2))
+)
+
+text(log(1/best),mRecall[best]-0.1,paste("best k=",kk[best]),col=2,cex=1.2)
+text(log(1/2),mRecall[2],paste("k=",2),col=2,cex=1.2)
+text(log(1/tr_size)+0.4,mRecall[tr_size],paste("k=",tr_size),col=2,cex=1.2)
+
 # near <- kknn(stroke~.,train,discarded_negs,k=kk[best],kernel = "rectangular")
 # summary(near$fitted.values)
