@@ -3,18 +3,32 @@ library(kknn) #a library for KNN
 library(dplyr) #library for dplyr tool
 
 rm(list=ls())
-setwd("C:/McCombs MSBA/summer sem/intro to ML/Exam and project/Project MSBA")
+setwd("D:/github_repos/GroupProject-Intro2ML")
 stroke <- read.csv("healthcare-dataset-stroke-data.csv") #read in stroke data
 
 dim(stroke) # get dimensions of the dataset
 n = dim(stroke)[1] # Set n equal to the number of rows in the dataset
+
+# Removing IDs
+stroke <- stroke[,-1]
 names(stroke) #get column names
 
+#Converting categorical variables----
+stroke$gender <- as.factor(stroke$gender)
+stroke$hypertension <- as.factor(stroke$hypertension)
+stroke$heart_disease <- as.factor(stroke$heart_disease)
+stroke$ever_married <- as.factor(stroke$ever_married)
+stroke$work_type <- as.factor(stroke$work_type)
+stroke$Residence_type <- as.factor(stroke$Residence_type)
+stroke$smoking_status <- as.factor(stroke$smoking_status)
+stroke$stroke <- as.factor(stroke$stroke)
+stroke$bmi <- as.double(stroke$bmi)
 
-#Check what the count is of each of these columns before changing to strings
+#Check count of each of these columns before changing to strings
 stroke %>%  group_by(hypertension) %>% summarise(n())
 stroke %>%  group_by(heart_disease) %>% summarise(n())
 stroke %>%  group_by(stroke) %>% summarise(n())
+
 
 #Change the numerical values of predictors and predictions to interpretable strings
 stroke$hypertension[stroke$hypertension == 1] <- "Hypertension"
