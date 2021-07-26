@@ -34,20 +34,61 @@ data$Residence_type <- as.factor(data$Residence_type)
 data$smoking_status <- as.factor(data$smoking_status)
 data$stroke <- as.factor(data$stroke)
 
+
 #----BMI----
 sum(is.na(data$bmi))/n #around 4 percent of the observations do not have BMI
 data <- data[!is.na(data$bmi),] # Drop BMI = N/A
 n <- dim(data)[1]
 
-#----Normalise Continuous Variables----
-normalize <- function(x){
-  return ((x - mean(x)) / sd(x))
-}
-df$avg_glucose_level <- normalize(df$avg_glucose_level)
-df$age <- normalize(df$age)
-df$bmi <- normalize(df$bmi)
+#----SMOTE(OverSampling)----
+# install.packages('smotefamily', dependencies = TRUE)
+library(smotefamily)
+library(ipred)
 
-#----Stratified Sampling----
+Union_data <- data[,c('age','avg_glucose_level','bmi','stroke')]
+# Union_data <- Union_data[complete.cases(Union_data),]
+
+#Using SMOTE to oversample and create balanced classes
+Balanced_data <- SMOTE(X = Union_data[,-ncol(Union_data)],target = Union_data$stroke, K=4, dup_size = 20)
+
+df <- Balanced_data$data
+df$stroke <- as.factor(df$class)
+table(df$stroke)
+n <- dim(df)[1]
+
+plot(col = df$stroke, pch=43, cex=1,
+     main = "Sample class distribution",
+     df %>% select(age, bmi, avg_glucose_level))
+
+# --Age v/s Glucose
+plot(df$age, df$avg_glucose_level,
+     col = df$stroke, pch=43, cex=1,
+     xlab = "Age",
+     ylab = "Average Glucose level",
+     main = "Oversampled Data Distribution\n(Age v/s Glucose)")
+legend(1, 275, legend=c("No Stroke", "Stroke"), col=c("black", "red"), lty=1:2, cex=0.5)
+
+# --BMI v/s Glucose
+plot(df$bmi, df$avg_glucose_level,
+     col = df$stroke, pch=43, cex=1,
+     xlab = "BMI",
+     ylab = "Average Glucose level",
+     main = "Oversampled Data Distribution\n(BMI v/s Glucose)")
+legend(80, 275, legend=c("No Stroke", "Stroke"), col=c("black", "red"), lty=1:2, cex=0.5)
+
+
+# --Plotting All 3 continuous Variables
+color <- c("#E69F00", "#56B4E9")
+shape <- c(42,43)
+scatterplot3d(x = df$age, xlab = "Age",
+              z = df$avg_glucose_level, zlab = "Avg. Glucose Level",
+              y = df$bmi, ylab = "BMI",
+              main = "Oversampled Stroke DataSet",
+              pch = shape[as.numeric(df$stroke)], 
+              color = color[as.numeric(df$stroke)],
+              box = FALSE, angle = 20)
+
+#----Stratified Sampling(UnderSampling)----
 
 # %age strokes v/s Non-strokes
 sum(as.character(data$stroke) == "1")/n # Just 4.25% positives?
@@ -94,6 +135,17 @@ scatterplot3d(x = df$age, xlab = "Age",
               color = color[as.numeric(df$stroke)],
               box = FALSE, angle = 20)
 
+
+
+#----Normalise Continuous Variables----
+
+normalize <- function(x){
+  return ((x - mean(x)) / sd(x))
+}
+df$avg_glucose_level <- normalize(df$avg_glucose_level)
+df$age <- normalize(df$age)
+df$bmi <- normalize(df$bmi)
+
 #----Neighbourhood Size----
 
 # taking a sample of 70%
@@ -107,7 +159,8 @@ test <- df[-tr,]
 # Recall_vals Will later be populated as a column vector containing recall
 # value for each 'k' nearest neighbour
 Recall_vals <- NULL
-kk <- seq(2,tr_size)
+kk <- seq(2,tr_size, by=50) # If Using SMOTE
+kk <- seq(2,tr_size)        # If using UnderSampling
 
 # Trying out different neighbourhood size
 for(i in kk)
@@ -136,7 +189,7 @@ text(log(1/kk[1]),(Recall_vals[1]),paste("k=",kk[1]),col=2,cex=1.2)
 text(log(1/kk[best]),(Recall_vals[best]-0.1),paste("best k=",kk[best]),col=2,cex=1.2)
 text(log(1/kk[364])+0.4,(Recall_vals[364]+0.05),paste("k=",kk[364]),col=2,cex=1.2)
 
-# Testing against discarded
+# Testing against discarded (UnderSampling)
 
 near <- kknn(stroke~age+avg_glucose_level+bmi,train,discarded_negs,k=kk[best],kernel = "rectangular")
 summary(near$fitted.values)
